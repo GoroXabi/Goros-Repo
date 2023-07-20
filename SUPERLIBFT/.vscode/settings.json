@@ -2,6 +2,12 @@
 	"files.associations": {
 		"libft.h": "c",
 		"ft_printf.h": "c",
-		"get_next_line.h": "c"
+		"get_next_line.h": "c",
+		"__locale": "c",
+		"__bit_reference": "c",
+		"algorithm": "c",
+		"bitset": "c",
+		"chrono": "c",
+		"unordered_map": "c"
 	}
 }

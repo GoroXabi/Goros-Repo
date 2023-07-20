@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line_utils.c                              :+:      :+:    :+:   */
+/*   get_next_line_utils_bonus.c                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: xortega <xortega@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/24 10:15:18 by xortega           #+#    #+#             */
-/*   Updated: 2023/07/06 14:43:13 by xortega          ###   ########.fr       */
+/*   Updated: 2023/07/20 10:45:26 by xortega          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ int	gnl_strlen(const char *str)
 	return (c);
 }
 
-void	gnl_cpy(char *src, char **dst, int start)
+void	cpy(char *src, char **dst, int start)
 {
 	int		k;
 
@@ -38,12 +38,12 @@ void	gnl_cpy(char *src, char **dst, int start)
 	dst[0][start] = '\0';
 }
 
-void	gnl_forget(t_struct *all)
+void	forget(t_struct *all, int fd)
 {
 	if (!all->temp)
 	{
-		free(all->rest);
-		all->rest = NULL;
+		free(all->rest[fd]);
+		all->rest[fd] = NULL;
 	}
 	else
 	{
@@ -54,7 +54,7 @@ void	gnl_forget(t_struct *all)
 	all->buff = NULL;
 }
 
-int	gnl_search(t_struct *all)
+int	search(t_struct *all)
 {
 	int	k;
 
@@ -72,31 +72,31 @@ int	gnl_search(t_struct *all)
 	return (-2);
 }
 
-char	*gnl_shorter(t_struct *all, int sh)
+char	*shorter(t_struct *all, int sh, int fd)
 {
 	char	*dst;
 	int		k;
 
 	if (all->rd < 0)
-		return (gnl_forget(all), NULL);
+		return (forget(all, fd), NULL);
 	if (sh >= 0)
 	{
-		gnl_cut(all, sh);
-		dst = gnl_pack(all, sh);
-		return (gnl_forget(all), dst);
+		cut(all, sh, fd);
+		dst = pack(all, sh);
+		return (forget(all, fd), dst);
 	}
 	else
 	{
 		if (!all->temp || all->temp[0] == '\0')
-			return (gnl_forget(all), NULL);
+			return (forget(all, fd), NULL);
 		k = -1;
 		dst = malloc(sizeof(char) * (gnl_strlen(all->temp) + 1));
 		if (!dst)
-			return (gnl_forget(all), NULL);
+			return (forget(all, fd), NULL);
 		while (all->temp[++k])
 			dst[k] = all->temp[k];
 		dst[k] = '\0';
-		return (gnl_forget(all), dst);
+		return (forget(all, fd), dst);
 	}
-	return (gnl_forget(all), dst);
+	return (forget(all, fd), dst);
 }

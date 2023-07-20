@@ -1,22 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: xortega <xortega@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/28 11:53:35 by xortega           #+#    #+#             */
-/*   Updated: 2023/07/06 14:43:05 by xortega          ###   ########.fr       */
+/*   Updated: 2023/07/20 10:45:23 by xortega          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
 #ifndef BUFFER_SIZE
-# define BUFFER_SIZE 20
+# define BUFFER_SIZE 42
 #endif
 
-void	gnl_addnew(t_struct *all, int fd)
+void	addnew(t_struct *all, int fd)
 {
 	char	*after;
 	int		before_len;
@@ -34,20 +34,20 @@ void	gnl_addnew(t_struct *all, int fd)
 	if (all->rd == -1)
 		return ;
 	all->buff[all->rd] = '\0';
-	gnl_cpy(all->temp, &after, 0);
-	gnl_cpy(all->buff, &after, before_len);
+	cpy(all->temp, &after, 0);
+	cpy(all->buff, &after, before_len);
 	free(all->temp);
 	all->temp = NULL;
 	all->temp = after;
 }
 
-void	gnl_remember(t_struct *all, int fd)
+void	remember(t_struct *all, int fd)
 {
 	int	k;
 	int	rest_len;
 
 	k = 0;
-	rest_len = gnl_strlen(all->rest);
+	rest_len = gnl_strlen(all->rest[fd]);
 	all->temp = malloc(sizeof(char) * (rest_len + BUFFER_SIZE + 1));
 	if (!all->temp)
 		return ;
@@ -59,30 +59,30 @@ void	gnl_remember(t_struct *all, int fd)
 		return ;
 	}
 	all->buff[all->rd] = '\0';
-	gnl_cpy(all->rest, &all->temp, 0);
-	gnl_cpy(all->buff, &all->temp, rest_len);
-	free(all->rest);
-	all->rest = NULL;
+	cpy(all->rest[fd], &all->temp, 0);
+	cpy(all->buff, &all->temp, rest_len);
+	free(all->rest[fd]);
+	all->rest[fd] = NULL;
 }
 
-void	gnl_cut(t_struct *all, int sh)
+void	cut(t_struct *all, int sh, int fd)
 {
 	int		k;
 
 	k = 0;
-	all->rest = malloc (sizeof(char) * (gnl_strlen(all->temp) - sh + 1));
-	if (!all->rest)
+	all->rest[fd] = malloc (sizeof(char) * (gnl_strlen(all->temp) - sh + 1));
+	if (!all->rest[fd])
 		return ;
 	while (all->temp[sh])
 	{
-		all->rest[k] = all->temp[sh];
+		all->rest[fd][k] = all->temp[sh];
 		k++;
 		sh++;
 	}
-	all->rest[k] = '\0';
+	all->rest[fd][k] = '\0';
 }
 
-char	*gnl_pack(t_struct *all, int sh)
+char	*pack(t_struct *all, int sh)
 {
 	char	*dst;
 	int		k;
@@ -106,28 +106,28 @@ char	*gnl_pack(t_struct *all, int sh)
 
 char	*get_next_line(int fd)
 {
-	static t_struct	all = {NULL, NULL, NULL, 1};
+	static t_struct	all = {NULL, NULL, {NULL}, 1};
 	int				sh;
 
 	if (fd < 0)
 		return (NULL);
-	if (all.rest == NULL)
+	if (all.rest[fd] == NULL)
 	{
-		all.rest = malloc(sizeof(char) * 1);
-		if (!all.rest)
-			return (gnl_forget(&all), NULL);
-		all.rest[0] = '\0';
+		all.rest[fd] = malloc(sizeof(char) * 1);
+		if (!all.rest[fd])
+			return (forget(&all, fd), NULL);
+		all.rest[fd][0] = '\0';
 	}
 	all.buff = malloc(sizeof(char) * BUFFER_SIZE + 1);
 	if (!all.buff)
-		return (gnl_forget(&all), NULL);
-	gnl_remember(&all, fd);
-	sh = gnl_search(&all);
+		return (forget(&all, fd), NULL);
+	remember(&all, fd);
+	sh = search(&all);
 	while (all.rd > 0 && sh <= 0 && all.temp)
 	{
-		gnl_addnew(&all, fd);
+		addnew(&all, fd);
 		if (all.temp && all.rd >= 0)
-			sh = gnl_search(&all);
+			sh = search(&all);
 	}
-	return (gnl_shorter(&all, sh));
+	return (shorter(&all, sh, fd));
 }
