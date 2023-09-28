@@ -43,10 +43,8 @@ void	addnew(t_struct *all, int fd)
 
 void	remember(t_struct *all, int fd)
 {
-	int	k;
 	int	rest_len;
 
-	k = 0;
 	rest_len = gnl_strlen(all->rest[fd]);
 	all->temp = malloc(sizeof(char) * (rest_len + BUFFER_SIZE + 1));
 	if (!all->temp)

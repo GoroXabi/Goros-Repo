@@ -27,7 +27,7 @@ static int	magnitudefb(int n)
 	return (i);
 }
 
-static int	sizefb(int n)
+/*static int	sizefb(int n)
 {
 	int	i;
 
@@ -43,17 +43,15 @@ static int	sizefb(int n)
 		i += 1;
 	}
 	return (i);
-}
+}*/
 
 void	ft_putnbr_fd(int n, int fd)
 {
-	int		siz;
 	int		mag;
 	char	c;
 
 	if (fd < 0)
 		return ;
-	siz = sizefb(n);
 	mag = magnitudefb(n);
 	if (n == -2147483648)
 		write(fd, "-2147483648", 11);

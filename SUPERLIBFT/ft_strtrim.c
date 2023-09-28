@@ -46,7 +46,7 @@ static size_t	trim_rsearch(char const *s1, char const *set)
 	size_t	size;
 
 	size = ft_strlen(s1);
-	while (size >= 0)
+	while (size > 0)
 	{
 		if (check(s1[size], set) == 1)
 			size--;
