@@ -1,32 +1,32 @@
 #!/bin/bash
 
-if [[ $1 -gt 10000 ]]
+if [[ $# -eq 0  ]]
+then
+	gcc -Wall -Wextra -Werror libft.a time_checker.c && ./a.out
+	rm -f a.out
+elif [[ $2 -gt 10000 ]]
 then
 	echo "SIZE TOO LARGE"
-else
-	if [[ $2 -gt 10000 ]]
-	then
+elif [[ $3 -gt 10000 ]]
+then
 	echo "TIMES TOO LARGE"
-	else
-		if [[ $3 = "split" ]]
-		then
-			gcc -Wall -Wextra -Werror -D SIZE=$1 -D TIMES=$2 -D FUNCTION=1 time_checker.c libft.a && ./a.out
-			rm -f a.out
-		elif [[ $3 = "printf" ]]
-		then
-			gcc -Wall -Wextra -Werror -D SIZE=$1 -D TIMES=$2 -D FUNCTION=2 time_checker.c libft.a && ./a.out
-			rm -f a.out
-		elif [[ $3 = "gnl" ]]
-		then
-			gcc -Wall -Wextra -Werror -D SIZE=$1 -D TIMES=$2 -D FUNCTION=3 time_checker.c libft.a && ./a.out
-			rm -f a.out
-		elif [[ $3 = "all" ]]
-		then
-			gcc -Wall -Wextra -Werror -D SIZE=$1 -D TIMES=$2 -D FUNCTION=0 time_checker.c libft.a && ./a.out
-			rm -f a.out
-		else
-			gcc -Wall -Wextra -Werror -D SIZE=$1 -D TIMES=$2 -D FUNCTION=4 time_checker.c libft.a && ./a.out
-			rm -f a.out
-		fi
-	fi
+elif [[ $1 = "split" ]]
+then
+	gcc -Wall -Wextra -Werror -D SIZE=$2 -D TIMES=$3 -D FUNCTION=1 libft.a time_checker.c && ./a.out
+	rm -f a.out
+elif [[ $1 = "printf" ]]
+then
+	gcc -Wall -Wextra -Werror -D SIZE=$2 -D TIMES=$3 -D FUNCTION=2 libft.a time_checker.c && ./a.out
+	rm -f a.out
+elif [[ $1 = "gnl" ]]
+then
+	gcc -Wall -Wextra -Werror -D SIZE=$2 -D TIMES=$3 -D FUNCTION=3 libft.a time_checker.c && ./a.out
+	rm -f a.out
+elif [[ $1 = "all" ]]
+then
+	gcc -Wall -Wextra -Werror -D SIZE=$2 -D TIMES=$3 -D FUNCTION=0 libft.a time_checker.c && ./a.out
+	rm -f a.out
+else
+	gcc -Wall -Wextra -Werror -D SIZE=$2 -D TIMES=$3 -D FUNCTION=4 libft.a time_checker.c && ./a.out
+	rm -f a.out
 fi

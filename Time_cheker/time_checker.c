@@ -6,7 +6,7 @@
 /*   By: xortega <xortega@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/26 16:05:49 by xortega           #+#    #+#             */
-/*   Updated: 2023/09/27 17:27:18 by xortega          ###   ########.fr       */
+/*   Updated: 2023/09/28 17:42:21 by xortega          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ char	rand_char(void)
 	return (rand() % (122 - 32) + 32);
 }
 
-int		rand_int(void)
+int	rand_int(void)
 {
 	srand(time(NULL) + rand());
 	return (rand() % SIZE);
@@ -64,6 +64,8 @@ int	main(void)
 {
 	clock_t	begin;
 	clock_t	end;
+	int		fd;
+	int		fd2;
 	char	c;
 	char	*temp;
 	int		n;
@@ -71,7 +73,7 @@ int	main(void)
 
 	if (FUNCTION == 4)
 	{
-		printf("Please intput in the third argument the function to test:\nsplit\nprintf\ngnl\nall\n");
+		printf("Please intput in the fisrt argument the function to test:\nsplit\nprintf\ngnl\nall\n");
 		return (0);
 	}
 	if (FUNCTION == 1 || FUNCTION == 0)
@@ -91,21 +93,46 @@ int	main(void)
 	}
 	if (FUNCTION == 2 || FUNCTION == 0)
 	{
-		for (int i = 0; i < TIMES; i++)
+		if ((fd = open("/dev/null", O_WRONLY)) < 0)
+			return (1);
+		dup2(1, fd);
+		close(1);
+		for (int i = 0; i < (TIMES * 10); i++)
 		{
 			temp = rand_str(&temp, SIZE);
 			c = rand_char();
 			n = rand_int();
 			begin = clock();
-			printf("random number: %d\n", n);
-			printf("random hexadecimal number: %X\n", n);
-			printf("random string: %s\n", temp);
-			printf("random char: %c\n", c);
+			ft_printf("random number: %d", n);
+			ft_printf("random hexadecimal number: %X", n);
+			ft_printf("random string: %s", temp);
+			ft_printf("random char: %c", c);
 			end = clock();
 			free(temp);
 			temp = NULL;
 			time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
 		}	
+		dup2(fd, 1);
+		close(fd);
+	}
+	if (FUNCTION == 3 || FUNCTION == 0)
+	{
+		int	stdout = dup(1);
+		remove("GNL_TEXT.txt");
+		fd = open("GNL_TEXT.txt", O_RDWR | O_CREAT, 0777);
+		fd2 = fd;
+		if (fd < 0)
+			return (0);
+		temp = rand_str(&temp, SIZE);
+		if (dup2(fd, 1) == -1)
+			return (0);
+	//	close(1);
+		ft_printf("%s", temp);
+		free(temp);
+		temp = NULL;
+		ft_printf("\n");
+		dup2(stdout, 1);
+	//	close(fd);
 	}
 	printf("SECS: %lf\n", time_spent);
 //	system("leaks a.out");
