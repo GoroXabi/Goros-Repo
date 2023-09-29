@@ -6,7 +6,7 @@
 /*   By: xortega <xortega@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/26 16:05:49 by xortega           #+#    #+#             */
-/*   Updated: 2023/09/28 17:42:21 by xortega          ###   ########.fr       */
+/*   Updated: 2023/09/29 16:57:11 by xortega          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,12 +64,13 @@ int	main(void)
 {
 	clock_t	begin;
 	clock_t	end;
+	int		stdout;
 	int		fd;
-	int		fd2;
 	char	c;
 	char	*temp;
-	int		n;
+	int		n = 0;
 	double	time_spent = 0.0;
+	double	total_time = 0.0;
 
 	if (FUNCTION == 4)
 	{
@@ -86,18 +87,24 @@ int	main(void)
 			ft_split(temp, c);
 			end = clock();
 	//		printf("ran |dom char %c; number %d: %s\n", c, i, temp);
-			free(temp);
 			temp = NULL;
+			free(temp);
 			time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
 		}
+		printf("SPLIT TOOK: %lf SECS\n", time_spent);
+		if (FUNCTION == 1)
+			return (0);
+		total_time += time_spent;
+		time_spent = 0.0;
 	}
 	if (FUNCTION == 2 || FUNCTION == 0)
 	{
-		if ((fd = open("/dev/null", O_WRONLY)) < 0)
+		fd = open("/dev/null", O_WRONLY);
+		if (fd < 0)
 			return (1);
 		dup2(1, fd);
 		close(1);
-		for (int i = 0; i < (TIMES * 10); i++)
+		for (int i = 0; i < (TIMES); i++)
 		{
 			temp = rand_str(&temp, SIZE);
 			c = rand_char();
@@ -108,33 +115,49 @@ int	main(void)
 			ft_printf("random string: %s", temp);
 			ft_printf("random char: %c", c);
 			end = clock();
-			free(temp);
 			temp = NULL;
+			free(temp);
 			time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
-		}	
+		}
 		dup2(fd, 1);
 		close(fd);
+		printf("PRINTF TOOK: %lf SECS\n", time_spent);
+		if (FUNCTION == 2)
+			return (0);
+		total_time += time_spent;
+		time_spent = 0.0;
 	}
 	if (FUNCTION == 3 || FUNCTION == 0)
 	{
-		int	stdout = dup(1);
+		stdout = dup(1);
 		remove("GNL_TEXT.txt");
 		fd = open("GNL_TEXT.txt", O_RDWR | O_CREAT, 0777);
-		fd2 = fd;
 		if (fd < 0)
 			return (0);
-		temp = rand_str(&temp, SIZE);
-		if (dup2(fd, 1) == -1)
-			return (0);
-	//	close(1);
-		ft_printf("%s", temp);
-		free(temp);
-		temp = NULL;
-		ft_printf("\n");
+		for (int i = 0; i < (TIMES); i++)
+		{
+			temp = rand_str(&temp, SIZE);
+			ft_putstr_fd(temp, fd);
+			temp = NULL;
+			free(temp);
+			ft_putstr_fd("\n", fd);
+		}
 		dup2(stdout, 1);
-	//	close(fd);
+		close(fd);
+		fd = open("GNL_TEXT.txt", O_RDWR, 0777);
+		begin = clock();
+		while ((get_next_line(fd)))
+			;
+		end = clock();
+		time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
+		printf("GNL TOOK: %lf SECS\n", time_spent);
+		if (FUNCTION == 3)
+			return (0);
+		total_time += time_spent;
+		time_spent = 0.0;
 	}
-	printf("SECS: %lf\n", time_spent);
+	remove("GNL_TEXT.txt");
+	printf("ALL THE TESTS TOOK: %lf SECS\n", total_time);
 //	system("leaks a.out");
 	return (0);
 }
