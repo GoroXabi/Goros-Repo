@@ -1,9 +1,21 @@
 #!/bin/bash
 
+size=100
+times=100
+
+if [[ $# -eq 2 ]]
+then
+	size=$2
+fi
+if [[ $# -eq 3 ]]
+then
+	size=$2
+	times=$3
+fi
 if [[ $# -eq 0  ]]
 then
-	make re;
-	gcc -Wall -Wextra -Werror -D SIZE=100 -D TIMES=100 -D FUNCTION=0 time_tester.c libft.a && ./a.out
+	make
+	gcc -Wall -Wextra -Werror -DSIZE=$size -DTIMES=$times -DFUNCTION=0 time_tester.c libft.a && ./a.out
 	rm -f a.out
 elif [[ $1 = "-h" ]]
 then
@@ -12,63 +24,63 @@ then
 	echo "The third argument indicates the number of Times that yout funcion whill be called"
 elif [[ $1 = "split" ]]
 then
-	if [[ $2 -gt 100000 ]]
+	if [[ $size -gt 100000 ]]
 	then
 	echo "SIZE TOO LARGE"
 	echo "you can change this cap in the .sh"
-	elif [[ $3 -gt 100000 ]]
+	elif [[ $times -gt 100000 ]]
 	then
 	echo "TIMES TOO LARGE" 
 	echo "you can change this cap in the .sh"
 	else
-	make re;
-	gcc -Wall -Wextra -Werror -D SIZE=$2 -D TIMES=$3 -D FUNCTION=1 time_tester.c libft.a && ./a.out
+	make
+	gcc -Wall -Wextra -Werror -DSIZE=$size -DTIMES=$times -DFUNCTION=1 time_tester.c libft.a && ./a.out
 	rm -f a.out
 	fi
 elif [[ $1 = "printf" ]]
 then
-	if [[ $2 -gt 10000 ]]
+	if [[ $size -gt 10000 ]]
 	then
 	echo "SIZE TOO LARGE"
 	echo "you can change this cap in the .sh"
-	elif [[ $3 -gt 100000 ]]
+	elif [[ $times -gt 100000 ]]
 	then
 	echo "TIMES TOO LARGE"
 	echo "you can change this cap in the .sh"
 	else
-	make re;
-	gcc -Wall -Wextra -Werror -D SIZE=$2 -D TIMES=$3 -D FUNCTION=2 time_tester.c libft.a && ./a.out
+	make
+	gcc -Wall -Wextra -Werror -DSIZE=$size -DTIMES=$times -DFUNCTION=2 time_tester.c libft.a && ./a.out
 	rm -f a.out
 	fi
 elif [[ $1 = "gnl" ]]
 then
-	if [[ $2 -gt 10000 ]]
+	if [[ $size -gt 10000 ]]
 	then
 	echo "SIZE TOO LARGE"
 	echo "you can change this cap in the .sh"
-	elif [[ $3 -gt 10000 ]]
+	elif [[ $times -gt 10000 ]]
 	then
 	echo "TIMES TOO LARGE"
 	echo "you can change this cap in the .sh"
 	else
-	make re;
-	gcc -Wall -Wextra -Werror -D SIZE=$2 -D TIMES=$3 -D FUNCTION=3 time_tester.c libft.a && ./a.out
+	make
+	gcc -Wall -Wextra -Werror -DSIZE=$size -DTIMES=$times -DFUNCTION=3 time_tester.c libft.a && ./a.out
 	rm -f a.out
 	fi
 elif [[ $1 = "all" ]]
 then
-	if [[ $2 -gt 10000 ]]
+	if [[ $size -gt 10000 ]]
 	then
 	echo "SIZE TOO LARGE"
 	echo "you can change this cap in the .sh"
-	elif [[ $3 -gt 10000 ]]
+	elif [[ $times -gt 10000 ]]
 	then
 	echo "TIMES TOO LARGE"
 	echo "you can change this cap in the .sh"
 	else
-	make re;
-	gcc -Wall -Wextra -Werror -D SIZE=$2 -D TIMES=$3 -D FUNCTION=0 time_tester.c libft.a && ./a.out
-	rm -f a.out
+	make
+	gcc -Wall -Wextra -Werror -DSIZE=$size -DTIMES=$times -DFUNCTION=0 time_tester.c libft.a && ./a.out
+#	rm -f a.out
 	fi
 else
 	echo "$1 is not in the test, -h for more help"

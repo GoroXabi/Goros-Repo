@@ -15,7 +15,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 
-#ifndef SIZE
+/*#ifndef SIZE
 # define SIZE 100
 #endif
 
@@ -25,7 +25,7 @@
 
 #ifndef FUNCTION
 # define FUNCTION 4
-#endif
+#endif*/
 
 //int argc, char const *argv[]
 char	*rand_str(char **random_str, int size)
@@ -82,7 +82,6 @@ int	main(void)
 			ft_split(temp, c);
 			end = clock();
 	//		printf("ran |dom char %c; number %d: %s\n", c, i, temp);
-			temp = NULL;
 			free(temp);
 			time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
 		}
@@ -110,7 +109,6 @@ int	main(void)
 			ft_printf("%s", temp);
 			ft_printf("%c", c);
 			end = clock();
-			temp = NULL;
 			free(temp);
 			time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
 		}
@@ -133,7 +131,6 @@ int	main(void)
 		{
 			temp = rand_str(&temp, SIZE);
 			ft_putstr_fd(temp, fd);
-			temp = NULL;
 			free(temp);
 			ft_putstr_fd("\n", fd);
 		}
