@@ -3,15 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   pipex.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: xortega <xortega@student.42.fr>            +#+  +:+       +#+        */
+/*   By: xabier <xabier@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/22 11:44:25 by xortega           #+#    #+#             */
-/*   Updated: 2023/10/25 16:51:58 by xortega          ###   ########.fr       */
+/*   Updated: 2023/10/26 19:30:54 by xabier           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "SUPERLIBFT/libft.h"
 #include "pipex.h"
+#include <unistd.h>
 
 char	*real_read(int fd)
 {
@@ -24,7 +25,8 @@ char	*real_read(int fd)
 
 int	main(int argc, char *argv[], char **envp)
 {
-	char	*argv2[3];
+	char	*argv2[4];
+	char	**spli;
 	pid_t	pid;
 	int		pip[2];
 	int		dst_fd;			
@@ -38,9 +40,20 @@ int	main(int argc, char *argv[], char **envp)
 		close(pip[PIPE_READ]);
 		dup2(pip[PIPE_WRITE], STDOUT_FILENO);
 		close(pip[PIPE_WRITE]);
-		argv2[0] = ft_strdup(argv[2]);
-		argv2[1] = ft_strdup(argv[1]);
-		argv2[2] = NULL;
+		if (ft_strchr(argv[2], ' '))
+		{
+			spli = ft_split(argv[2], ' ');
+			argv2[0] = spli[0];
+			argv2[1] = spli[1];
+			argv2[2] = ft_strdup(argv[1]);
+			argv2[3] = NULL;
+		}
+		else
+		{
+			argv2[0] = ft_strdup(argv[2]);
+			argv2[1] = ft_strdup(argv[1]);
+			argv2[2] = NULL;
+		}
 		//printf("argv2[0]= %s\n", argv2[0]);
 		//printf("argv2[1]= %s\n", argv2[1]);
 		execve(ft_strjoin("/bin/", argv2[0]), argv2, envp);
@@ -49,15 +62,31 @@ int	main(int argc, char *argv[], char **envp)
 	{
 		close(pip[PIPE_WRITE]);
 		//printf("pipe in: [%s]\n", real_read(pip[PIPE_READ]));
-		argv2[0] = ft_strdup(argv[3]);
-		argv2[1] = real_read(pip[PIPE_READ]);
-		argv2[2] = NULL;
-		dst_fd = open(argv[4], O_RDWR, 0777);
+		if (ft_strchr(argv[3], ' '))
+		{
+			spli = ft_split(argv[3], ' ');
+			argv2[0] = spli[0];
+			argv2[1] = spli[1];
+			argv2[2] = NULL;
+			dst_fd = open(argv[4], O_RDWR, 0777);
+
+		}
+		else
+		{
+			argv2[0] = ft_strdup(argv[3]);
+			argv2[1] = NULL;
+			dst_fd = open(argv[4], O_RDWR, 0777);
+
+		}
+		dup2(pip[PIPE_READ], STDIN_FILENO);
+		close(pip[PIPE_READ]);
+		//argv2[1] = real_read(pip[PIPE_READ]);
 		pid = fork();
 		if (pid == 0)
 		{
 			printf("argv2[0] [%s]\n", argv2[0]);
 			printf("argv2[1] [%s]\n", argv2[1]);
+			printf("dst_fd: [%d]\n", dst_fd);
 			dup2(dst_fd, STDOUT_FILENO);
 			close(dst_fd);
 			execve(ft_strjoin("/usr/bin/", argv2[0]), argv2, envp);
