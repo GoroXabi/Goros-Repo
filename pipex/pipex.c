@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipex.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: xabier <xabier@student.42.fr>              +#+  +:+       +#+        */
+/*   By: xortega <xortega@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/22 11:44:25 by xortega           #+#    #+#             */
-/*   Updated: 2023/10/26 19:30:54 by xabier           ###   ########.fr       */
+/*   Updated: 2023/10/27 11:31:03 by xortega          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,38 @@ char	*real_read(int fd)
 	read(fd, dst, 82);
 	dst[82] = '\0';
 	return (ft_strdup(dst));
+}
+
+char	*make_path(char *path, char *program)
+{
+	char	*complete_path;
+
+	complete_path = ft_strjoin(path, program);
+	free(path);
+	return (complete_path);
+}
+
+char	**get_paths(char *program, char **envp)
+{
+	char	**posible_paths;
+	int		i;
+
+	i = 0;
+	while (!ft_strnstr(envp[i], "PATH", 4))
+		i++;
+	posible_paths = ft_split(envp[i] + 5, ':');
+	i = -1;
+	while (posible_paths[++i])
+		posible_paths[i] = make_path(posible_paths[i], program);
+	return (posible_paths);
+}
+
+int	execute(char *path, char **argv2, char **envp)
+{
+	int	error;
+
+	error = execve(path, argv2, envp);
+	return (error);
 }
 
 int	main(int argc, char *argv[], char **envp)
