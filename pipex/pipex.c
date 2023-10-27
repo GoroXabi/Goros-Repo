@@ -6,7 +6,7 @@
 /*   By: xortega <xortega@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/22 11:44:25 by xortega           #+#    #+#             */
-/*   Updated: 2023/10/27 11:31:03 by xortega          ###   ########.fr       */
+/*   Updated: 2023/10/27 14:21:12 by xortega          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,18 @@ char	*real_read(int fd)
 	return (ft_strdup(dst));
 }
 
+char	*check_path(char **posible_paths)
+{
+	int	i;
+
+	i = -1;
+	while (posible_paths[++i])
+		if (!access(posible_paths[i], F_OK))
+			return (posible_paths[i]);
+	/*free posible paths*/
+	return (NULL);
+}
+
 char	*make_path(char *path, char *program)
 {
 	char	*complete_path;
@@ -32,11 +44,13 @@ char	*make_path(char *path, char *program)
 	return (complete_path);
 }
 
-char	**get_paths(char *program, char **envp)
+char	*get_path(char **arg, char **envp)
 {
 	char	**posible_paths;
+	char	*program;
 	int		i;
 
+	program = ft_strjoin("/", *arg);
 	i = 0;
 	while (!ft_strnstr(envp[i], "PATH", 4))
 		i++;
@@ -44,7 +58,7 @@ char	**get_paths(char *program, char **envp)
 	i = -1;
 	while (posible_paths[++i])
 		posible_paths[i] = make_path(posible_paths[i], program);
-	return (posible_paths);
+	return (check_path(posible_paths));
 }
 
 int	execute(char *path, char **argv2, char **envp)
@@ -53,6 +67,28 @@ int	execute(char *path, char **argv2, char **envp)
 
 	error = execve(path, argv2, envp);
 	return (error);
+}
+
+char	**get_argv2(char **argv)
+{
+	char	**argv2;
+	char	**spli;
+
+	if (ft_strchr(argv[3], ' '))
+	{
+		spli = ft_split(argv[3], ' ');
+		argv2 = malloc(sizeof(char *) * 3);
+		argv2[0] = spli[0];
+		argv2[1] = spli[1];
+		argv2[2] = NULL;
+	}
+	else
+	{
+		argv2 = malloc(sizeof(char *) * 2);
+		argv2[0] = ft_strdup(argv[3]);
+		argv2[1] = NULL;
+	}
+	return (argv2);
 }
 
 int	main(int argc, char *argv[], char **envp)
@@ -86,42 +122,37 @@ int	main(int argc, char *argv[], char **envp)
 			argv2[1] = ft_strdup(argv[1]);
 			argv2[2] = NULL;
 		}
-		//printf("argv2[0]= %s\n", argv2[0]);
-		//printf("argv2[1]= %s\n", argv2[1]);
 		execve(ft_strjoin("/bin/", argv2[0]), argv2, envp);
 	}
 	else
 	{
 		close(pip[PIPE_WRITE]);
 		//printf("pipe in: [%s]\n", real_read(pip[PIPE_READ]));
-		if (ft_strchr(argv[3], ' '))
+		/*if (ft_strchr(argv[3], ' '))
 		{
 			spli = ft_split(argv[3], ' ');
 			argv2[0] = spli[0];
 			argv2[1] = spli[1];
 			argv2[2] = NULL;
-			dst_fd = open(argv[4], O_RDWR, 0777);
-
 		}
 		else
 		{
 			argv2[0] = ft_strdup(argv[3]);
 			argv2[1] = NULL;
-			dst_fd = open(argv[4], O_RDWR, 0777);
-
-		}
+		}*/
+		dst_fd = open(argv[4], O_RDWR | O_TRUNC, 0777);
 		dup2(pip[PIPE_READ], STDIN_FILENO);
 		close(pip[PIPE_READ]);
 		//argv2[1] = real_read(pip[PIPE_READ]);
 		pid = fork();
 		if (pid == 0)
 		{
-			printf("argv2[0] [%s]\n", argv2[0]);
-			printf("argv2[1] [%s]\n", argv2[1]);
+			printf("argv[3] [%s]\n", argv[3]);
+			printf("path [%s]\n", get_path(ft_split(argv[3], ' '), envp));
 			printf("dst_fd: [%d]\n", dst_fd);
 			dup2(dst_fd, STDOUT_FILENO);
 			close(dst_fd);
-			execve(ft_strjoin("/usr/bin/", argv2[0]), argv2, envp);
+			execve(get_path(ft_split(argv[3], ' '), envp), get_argv2(argv), envp);
 		}
 	}
 	return (0);
