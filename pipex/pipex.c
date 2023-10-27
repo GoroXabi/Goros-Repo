@@ -6,7 +6,7 @@
 /*   By: xortega <xortega@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/22 11:44:25 by xortega           #+#    #+#             */
-/*   Updated: 2023/10/27 14:21:12 by xortega          ###   ########.fr       */
+/*   Updated: 2023/10/27 14:23:26 by xortega          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ char	*get_path(char **arg, char **envp)
 	char	*program;
 	int		i;
 
-	program = ft_strjoin("/", *arg);
+	program = ft_strjoin("/", arg[0]);
 	i = 0;
 	while (!ft_strnstr(envp[i], "PATH", 4))
 		i++;
