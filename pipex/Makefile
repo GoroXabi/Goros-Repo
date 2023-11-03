@@ -1,12 +1,12 @@
 # **************************************************************************** #
 #                                                                              #
 #                                                         :::      ::::::::    #
-#    makefile                                           :+:      :+:    :+:    #
+#    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: xortega <xortega@student.42.fr>            +#+  +:+       +#+         #
+#    By: xabier <xabier@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/25 12:09:10 by xortega           #+#    #+#              #
-#    Updated: 2023/10/31 10:25:13 by xortega          ###   ########.fr        #
+#    Updated: 2023/11/03 17:25:46 by xabier           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -21,7 +21,7 @@ CFLAGS			:= -Wall -Wextra -Werror
 all: $(NAME)
 
 $(NAME):
-	$(CC) $(CFLAGS) pipex.c ./SUPERLIBFT/SUPERlibft.a -o $(NAME)
+	$(CC) $(CFLAGS) pipex.c libft.a -o $(NAME)
 	chmod 777 $(NAME)
 
 fclean:

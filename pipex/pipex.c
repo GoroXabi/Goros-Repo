@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipex.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: xortega <xortega@student.42.fr>            +#+  +:+       +#+        */
+/*   By: xabier <xabier@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/22 11:44:25 by xortega           #+#    #+#             */
-/*   Updated: 2023/11/03 13:54:16 by xortega          ###   ########.fr       */
+/*   Updated: 2023/11/03 17:57:35 by xabier           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,9 @@ char	*check_path(char **posible_paths)
 			return (correct_path);
 		}
 	}
-	return (NULL);
+	perror("pipex: command path not found");
+	exit(125);
+	return(NULL);
 }
 
 char	*make_path(char *path, char *program)
@@ -71,6 +73,8 @@ char	**g_argv(char **argv, int arg)
 	{
 		spli = ft_split(argv[arg], ' ');
 		argv2 = malloc(sizeof(char *) * 3);
+		if (!argv2)
+			exit (125);
 		argv2[0] = spli[0];
 		argv2[1] = spli[1];
 		argv2[2] = NULL;
@@ -78,6 +82,8 @@ char	**g_argv(char **argv, int arg)
 	else
 	{
 		argv2 = malloc(sizeof(char *) * 2);
+		if (!argv2)
+			exit (125);
 		argv2[0] = ft_strdup(argv[arg]);
 		argv2[1] = NULL;
 	}
@@ -106,25 +112,37 @@ int	fd_manager(int cas, t_pipex *data)
 	return (-1);
 }
 
-int	open_txt(char *source, char* dest, t_pipex *data)
+void	open_txt(char *source, char* dest, t_pipex *data)
 {
 	data->src_fd = open(source, O_RDONLY, 0777);
 	data->dst_fd = open(dest, O_RDWR | O_TRUNC, 0777);
-	if (data->dst_fd > 0 && data->src_fd > 0)
-		return (1);
-	else
-		return (-1);
+	if (data->dst_fd < 0)
+	{
+		perror("pipex: destination file couldn't be opened");
+		exit(125);
+	}
+	if (data->src_fd < 0)
+	{
+		perror("pipex: source file couldn't be opened");
+		exit(125);
+	}
 }
 
-int	forke(t_pipex *data, int n, char **argv, char **envp)
+void	forke(t_pipex *data, int n, char **argv, char **envp)
 {
 	data->pid = fork();
 	if (data->pid == 0)
 	{	
 		fd_manager(n, data);
 		execve(g_path(ft_split(argv[n], ' '), envp), g_argv(argv, n), envp);
+		perror("pipex: execve failed");
+		exit(125);
 	}
-	return (0);
+	if (data->pid < 0)
+	{
+		perror("pipex: fork failed");
+		exit(125);
+	}
 }
 
 void imput_errors(int argc, char **argv, char **envp)
@@ -132,7 +150,7 @@ void imput_errors(int argc, char **argv, char **envp)
 	if (argc < 5)
 	{
 		perror("pipex: not enough arguments");
-		exit(0);
+		exit(22);
 	}
 	if (!(g_path(ft_split(argv[2], ' '), envp)))
 	{
@@ -158,12 +176,12 @@ void imput_errors(int argc, char **argv, char **envp)
 
 int	main(int argc, char *argv[], char **envp)
 {
-	//t_pipex	data;
+	t_pipex	data;
 
 	imput_errors(argc, argv, envp);
-	/*pipe(data.pip);
+	pipe(data.pip);
 	open_txt(argv[1], argv[4], &data);
 	forke(&data, 2, argv, envp);
-	forke(&data, 3, argv, envp);*/
+	forke(&data, 3, argv, envp);
 	return (0);
 }
