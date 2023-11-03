@@ -6,7 +6,7 @@
 /*   By: xortega <xortega@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/22 11:44:25 by xortega           #+#    #+#             */
-/*   Updated: 2023/11/03 13:41:27 by xortega          ###   ########.fr       */
+/*   Updated: 2023/11/03 13:54:16 by xortega          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,23 +136,23 @@ void imput_errors(int argc, char **argv, char **envp)
 	}
 	if (!(g_path(ft_split(argv[2], ' '), envp)))
 	{
-		perror("pipex: first command not found\n");
-		exit(-1);
+		perror("pipex: first command");
+		exit(2);
 	}
 	if (!(g_path(ft_split(argv[3], ' '), envp)))
 	{
-		perror("pipex: second command not found\n");
-		exit(-1);
+		perror("pipex: second command");
+		exit(2);
 	}
 	if (access(argv[1], F_OK))
 	{
-		perror("pipex: source file not found\n");
-		exit(-1);
+		perror("pipex: source file");
+		exit(2);
 	}
 	if (access(argv[argc - 1], F_OK))
 	{
-		perror("pipex: destination file not found\n");
-		exit(-1);
+		perror("pipex: destination file");
+		exit(2);
 	}
 }
 
