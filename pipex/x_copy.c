@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   pipex_copy.c                                       :+:      :+:    :+:   */
+/*   x_copy.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: xortega <xortega@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/22 11:44:25 by xortega           #+#    #+#             */
-/*   Updated: 2023/10/30 13:51:49 by xortega          ###   ########.fr       */
+/*   Updated: 2023/11/03 12:08:20 by xortega          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,13 +16,23 @@
 
 char	*check_path(char **posible_paths)
 {
-	int	i;
+	int		i;
+	char	*correct_path;
 
 	i = -1;
 	while (posible_paths[++i])
+	{	
 		if (!access(posible_paths[i], F_OK))
-			return (posible_paths[i]);
-	/*free posible paths*/
+		{
+			correct_path = ft_strdup(posible_paths[i]);
+			i = -1;
+			while (posible_paths[++i])
+				free(posible_paths[i]);
+			free(posible_paths);
+			posible_paths = NULL;
+			return (correct_path);
+		}
+	}
 	return (NULL);
 }
 
