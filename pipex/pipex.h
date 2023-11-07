@@ -6,7 +6,7 @@
 /*   By: xortega <xortega@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/20 13:57:40 by xortega           #+#    #+#             */
-/*   Updated: 2023/11/07 13:48:21 by xortega          ###   ########.fr       */
+/*   Updated: 2023/11/07 16:24:45 by xortega          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,11 +25,11 @@
 
 typedef struct pipex_struct
 {
-	int	pip[2];
-	int	pid;
-	int	dst_fd;
-	int	src_fd;
-	int	error;
+	int		pip[2];
+	pid_t	pid;
+	int		dst_fd;
+	int		src_fd;
+	int		argc;
 }					t_pipex;
 
 #endif

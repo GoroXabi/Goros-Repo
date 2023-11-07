@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   pipex.c                                            :+:      :+:    :+:   */
+/*   x_copy.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: xortega <xortega@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/22 11:44:25 by xortega           #+#    #+#             */
-/*   Updated: 2023/11/07 17:24:12 by xortega          ###   ########.fr       */
+/*   Updated: 2023/11/07 17:22:12 by xortega          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,30 +90,7 @@ char	**g_argv(char **argv, int arg)
 	return (argv2);
 }
 
-int	fd_manager(int cas, t_pipex *data)
-{
-	if (cas == 2)
-	{
-		close(data->pip[PIPE_READ]);
-		dup2(data->pip[PIPE_WRITE], STDOUT_FILENO);
-		close(data->pip[PIPE_WRITE]);
-		dup2(data->src_fd, STDIN_FILENO);
-		close(data->src_fd);
-		return (0);
-	}
-	if (cas == 3)
-	{
-		close(data->pip[PIPE_WRITE]);
-		dup2(data->pip[PIPE_READ], STDIN_FILENO);
-		close(data->pip[PIPE_READ]);
-		dup2(data->dst_fd, STDOUT_FILENO);
-		close(data->dst_fd);
-		return (0);
-	}
-	return (-1);
-}
-
-void	open_txt(char *source, char* dest, t_pipex *data)
+void	open_txt(char *source, char *dest, t_pipex *data)
 {
 	data->src_fd = open(source, O_RDONLY, 0644);
 	data->dst_fd = open(dest, O_RDWR | O_TRUNC | O_CREAT, 0644);
@@ -128,15 +105,49 @@ void	open_txt(char *source, char* dest, t_pipex *data)
 		exit(125);
 	}
 }
+int	src_child(t_pipex *data)
+{
+	close(data->pip[PIPE_READ]);
+	dup2(data->src_fd, STDIN_FILENO);
+	close(data->src_fd);
+	dup2(data->pip[PIPE_WRITE], STDOUT_FILENO);
+	close(data->pip[PIPE_WRITE]);
+	return (0);
+}
 
-void	forke(t_pipex *data, int n, char **argv, char **envp)
+int	dst_child(t_pipex *data)
+{
+	close(data->pip[PIPE_WRITE]);
+	dup2(data->pip[PIPE_READ], STDIN_FILENO);
+	close(data->pip[PIPE_READ]);
+	dup2(data->dst_fd, STDOUT_FILENO);
+	close(data->dst_fd);
+	return (0);
+}
+int	middle_child(t_pipex *data)
+{
+	dup2(data->pip[PIPE_READ], STDIN_FILENO);
+	close(data->pip[PIPE_READ]);
+	dup2(data->pip[PIPE_WRITE], STDOUT_FILENO);
+	close(data->pip[PIPE_WRITE]);
+	return (0);
+}
+
+void	forke(t_pipex *data, int cas, char **argv, char **envp)
 {
 	data->pid = fork();
+	pipe(data->pip);
 	if (data->pid == 0)
 	{	
-		fd_manager(n, data);
-		execve(g_path(ft_split(argv[n], ' '), envp), g_argv(argv, n), envp);
-		//perror("pipex: execve failed");
+		if (cas == 2)
+			src_child(data);
+		//if (cas > 2 && cas < (data->argc - 2))
+		//	middle_child(data);
+		if (cas == (data->argc - 2))
+			dst_child(data);
+		//perror(argv[cas]);
+		//perror(ft_itoa(cas));
+		execve(g_path(ft_split(argv[cas], ' '), envp), g_argv(argv, cas), envp);
 		exit(125);
 	}
 	if (data->pid < 0)
@@ -144,6 +155,8 @@ void	forke(t_pipex *data, int n, char **argv, char **envp)
 		perror("pipex: fork failed");
 		exit(125);
 	}
+	if (data->pid > 0)
+		waitpid(data->pid, NULL, WNOHANG);
 }
 
 void imput_errors(int argc, char **argv)
@@ -163,11 +176,18 @@ void imput_errors(int argc, char **argv)
 int	main(int argc, char *argv[], char **envp)
 {
 	t_pipex	data;
+	//int		i;
 
 	imput_errors(argc, argv);
-	pipe(data.pip);
-	open_txt(argv[1], argv[4], &data);
+	data.argc = argc;
+	open_txt(argv[1], argv[argc - 1], &data);
 	forke(&data, 2, argv, envp);
-	forke(&data, 3, argv, envp);
+	/*i = 3;
+	while (i < argc - 2)
+	{
+		forke(&data, i, argv, envp);
+		i++;
+	}*/
+	forke(&data, (argc - 2), argv, envp);
 	return (0);
 }
