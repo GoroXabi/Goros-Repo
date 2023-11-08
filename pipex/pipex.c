@@ -6,7 +6,7 @@
 /*   By: xortega <xortega@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/22 11:44:25 by xortega           #+#    #+#             */
-/*   Updated: 2023/11/08 12:11:51 by xortega          ###   ########.fr       */
+/*   Updated: 2023/11/08 15:49:44 by xortega          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,32 +72,70 @@ char	*get_path(char **arg, char **envp, t_pipex *data, int cas)
 	return (correct_path);
 }
 
-char	**get_argv(char **argv, int arg)
+char	**nigthmare_quotes(char **argv, int arg, t_pipex *data)
 {
-	char	**argv2;
 	char	**spli;
 	char	*temp;
 
-	if (ft_strchr(argv[arg], '"'))//hazlo alreves primero splitea espacios y luego trimea commilas
-	{
-		spli = ft_split(argv[arg], '"');
+	if (ft_strchr(argv[arg], '"') > ft_strchr(argv[arg], '\''))
+	{	
+		spli = ft_split(argv[arg], '\'');
 		temp = ft_strdup(spli[0]);
 		free (spli[0]);
 		spli[0] = ft_strtrim(temp, " ");
-		return (free (temp), spli);
+		free (temp);
+		return (spli);
 	}
-	else if (ft_strchr(argv[arg], ' '))
-		return (spli = ft_split(argv[arg], ' '));
-	else if (ft_strchr(argv[arg], '\''))
-		return (spli = ft_split(argv[arg], '\''));
 	else
 	{
-		argv2 = malloc(sizeof(char *) * 2);
-		if (!argv2)
-			exit (125);
-		argv2[0] = ft_strdup(argv[arg]);
-		argv2[1] = NULL;
+		spli = ft_split(argv[arg], '\"');
+		temp = ft_strdup(spli[0]);
+		free (spli[0]);
+		spli[0] = ft_strtrim(temp, " ");
+		free (temp);
+		data->error = 2;
+		return (spli);
 	}
+	return (NULL);
+}
+char	**double_quotes(char **argv, int arg)
+{
+	char	**spli;
+	char	*temp;
+
+	spli = ft_split(argv[arg], '\'');
+	temp = ft_strdup(spli[0]);
+	free (spli[0]);
+	spli[0] = ft_strtrim(temp, " ");
+	free (temp);
+	return (spli);
+}
+char	**single_quotes(char **argv, int arg)
+{
+	char	**spli;
+	char	*temp;
+
+	spli = ft_split(argv[arg], '"');
+	temp = ft_strdup(spli[0]);
+	free (spli[0]);
+	spli[0] = ft_strtrim(temp, " ");
+	free (temp);
+	return (spli);
+}
+
+char	**get_argv(char **argv, int arg, t_pipex *data)
+{
+	char	**argv2;
+	char	**spli;
+
+	if (ft_strchr(argv[arg], '"') && ft_strchr(argv[arg], '\''))
+		return (nigthmare_quotes(argv, arg, data));
+	else if (ft_strchr(argv[arg], '\''))
+		return (double_quotes(argv, arg));
+	else if (ft_strchr(argv[arg], '"'))
+		return (single_quotes(argv, arg));
+	else
+		return (spli = ft_split(argv[arg], ' '));
 	return (argv2);
 }
 
@@ -135,7 +173,7 @@ void	forke(t_pipex *data, int n, char **argv, char **envp)
 	char	**arguments;
 	char	*path;
 
-	arguments = get_argv(argv, n);
+	arguments = get_argv(argv, n, data);
 	path = get_path(ft_split(argv[n], ' '), envp, data, n);
 	data->pid = fork();
 	if (data->pid == 0)
