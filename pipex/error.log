@@ -1,4 +1,4 @@
-grep j: Invalid argument
-2: Invalid argument
-grep d: Invalid argument
-3: Invalid argument
+awk: syntax error at source line 1
+ context is
+	 >>> ' <<< 
+awk: bailing out at source line 1

@@ -6,7 +6,7 @@
 /*   By: xortega <xortega@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/22 11:44:25 by xortega           #+#    #+#             */
-/*   Updated: 2023/11/07 17:24:12 by xortega          ###   ########.fr       */
+/*   Updated: 2023/11/08 12:11:51 by xortega          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,9 +33,7 @@ char	*check_path(char **posible_paths)
 			return (correct_path);
 		}
 	}
-	//perror("pipex: command path not found");
-	//exit(125);
-	return(NULL);
+	return (NULL);
 }
 
 char	*make_path(char *path, char *program)
@@ -47,9 +45,10 @@ char	*make_path(char *path, char *program)
 	return (complete_path);
 }
 
-char	*g_path(char **arg, char **envp)
+char	*get_path(char **arg, char **envp, t_pipex *data, int cas)
 {
 	char	**posible_paths;
+	char	*correct_path;
 	char	*program;
 	int		i;
 
@@ -61,24 +60,36 @@ char	*g_path(char **arg, char **envp)
 	i = -1;
 	while (posible_paths[++i])
 		posible_paths[i] = make_path(posible_paths[i], program);
-	return (check_path(posible_paths));
+	correct_path = check_path(posible_paths);
+	if (!correct_path)
+	{
+		ft_putstr_fd("pipex: ", 2);
+		ft_putstr_fd(arg[0], 2);
+		ft_putstr_fd(": command not found\n", 2);
+		if (cas > 2)
+			data->error = 127;
+	}
+	return (correct_path);
 }
 
-char	**g_argv(char **argv, int arg)
+char	**get_argv(char **argv, int arg)
 {
 	char	**argv2;
 	char	**spli;
+	char	*temp;
 
-	if (ft_strchr(argv[arg], ' '))
+	if (ft_strchr(argv[arg], '"'))//hazlo alreves primero splitea espacios y luego trimea commilas
 	{
-		spli = ft_split(argv[arg], ' ');
-		argv2 = malloc(sizeof(char *) * 3);
-		if (!argv2)
-			exit (125);
-		argv2[0] = spli[0];
-		argv2[1] = spli[1];
-		argv2[2] = NULL;
+		spli = ft_split(argv[arg], '"');
+		temp = ft_strdup(spli[0]);
+		free (spli[0]);
+		spli[0] = ft_strtrim(temp, " ");
+		return (free (temp), spli);
 	}
+	else if (ft_strchr(argv[arg], ' '))
+		return (spli = ft_split(argv[arg], ' '));
+	else if (ft_strchr(argv[arg], '\''))
+		return (spli = ft_split(argv[arg], '\''));
 	else
 	{
 		argv2 = malloc(sizeof(char *) * 2);
@@ -117,57 +128,41 @@ void	open_txt(char *source, char* dest, t_pipex *data)
 {
 	data->src_fd = open(source, O_RDONLY, 0644);
 	data->dst_fd = open(dest, O_RDWR | O_TRUNC | O_CREAT, 0644);
-	if (data->dst_fd < 0)
-	{
-		perror("pipex: destination file couldn't be opened");
-		exit(125);
-	}
-	if (data->src_fd < 0)
-	{
-		perror("pipex: source file couldn't be opened");
-		exit(125);
-	}
 }
 
 void	forke(t_pipex *data, int n, char **argv, char **envp)
 {
+	char	**arguments;
+	char	*path;
+
+	arguments = get_argv(argv, n);
+	path = get_path(ft_split(argv[n], ' '), envp, data, n);
 	data->pid = fork();
 	if (data->pid == 0)
 	{	
 		fd_manager(n, data);
-		execve(g_path(ft_split(argv[n], ' '), envp), g_argv(argv, n), envp);
-		//perror("pipex: execve failed");
+		execve(path, arguments, envp);
 		exit(125);
 	}
 	if (data->pid < 0)
-	{
-		perror("pipex: fork failed");
-		exit(125);
-	}
-}
-
-void imput_errors(int argc, char **argv)
-{
-	if (argc < 5)
-	{
-		perror("pipex: not enough arguments");
-		exit(22);
-	}
-	if (access(argv[1], F_OK | R_OK))
-	{
-		perror("pipex: source file");
 		exit(2);
-	}
+	if (data->pid > 0)
+		waitpid(data->pid, NULL, WNOHANG);
 }
 
 int	main(int argc, char *argv[], char **envp)
 {
 	t_pipex	data;
 
-	imput_errors(argc, argv);
+	if (argc < 5)
+	{
+		perror("pipex: not enough arguments");
+		exit(2);
+	}
+	data.error = 0;
 	pipe(data.pip);
 	open_txt(argv[1], argv[4], &data);
 	forke(&data, 2, argv, envp);
 	forke(&data, 3, argv, envp);
-	return (0);
+	return (data.error);
 }
