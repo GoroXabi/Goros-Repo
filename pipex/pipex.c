@@ -6,7 +6,7 @@
 /*   By: xortega <xortega@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/22 11:44:25 by xortega           #+#    #+#             */
-/*   Updated: 2023/11/08 15:49:44 by xortega          ###   ########.fr       */
+/*   Updated: 2023/11/10 13:39:56 by xortega          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,11 @@ char	*check_path(char **posible_paths)
 			return (correct_path);
 		}
 	}
+	i = -1;
+	while (posible_paths[++i])
+		free(posible_paths[i]);
+	free(posible_paths);
+	posible_paths = NULL;
 	return (NULL);
 }
 
@@ -60,6 +65,7 @@ char	*get_path(char **arg, char **envp, t_pipex *data, int cas)
 	i = -1;
 	while (posible_paths[++i])
 		posible_paths[i] = make_path(posible_paths[i], program);
+	free(program);
 	correct_path = check_path(posible_paths);
 	if (!correct_path)
 	{
@@ -68,18 +74,19 @@ char	*get_path(char **arg, char **envp, t_pipex *data, int cas)
 		ft_putstr_fd(": command not found\n", 2);
 		if (cas > 2)
 			data->error = 127;
+		return (ft_strdup(""));
 	}
 	return (correct_path);
 }
 
-char	**nigthmare_quotes(char **argv, int arg, t_pipex *data)
+char	**nigthmare_quotes(char *arg, t_pipex *data)
 {
 	char	**spli;
 	char	*temp;
 
-	if (ft_strchr(argv[arg], '"') > ft_strchr(argv[arg], '\''))
+	if (ft_strchr(arg, '"') > ft_strchr(arg, '\''))
 	{	
-		spli = ft_split(argv[arg], '\'');
+		spli = ft_split(arg, '\'');
 		temp = ft_strdup(spli[0]);
 		free (spli[0]);
 		spli[0] = ft_strtrim(temp, " ");
@@ -88,7 +95,7 @@ char	**nigthmare_quotes(char **argv, int arg, t_pipex *data)
 	}
 	else
 	{
-		spli = ft_split(argv[arg], '\"');
+		spli = ft_split(arg, '\"');
 		temp = ft_strdup(spli[0]);
 		free (spli[0]);
 		spli[0] = ft_strtrim(temp, " ");
@@ -98,24 +105,24 @@ char	**nigthmare_quotes(char **argv, int arg, t_pipex *data)
 	}
 	return (NULL);
 }
-char	**double_quotes(char **argv, int arg)
+char	**double_quotes(char *arg)
 {
 	char	**spli;
 	char	*temp;
 
-	spli = ft_split(argv[arg], '\'');
+	spli = ft_split(arg, '\'');
 	temp = ft_strdup(spli[0]);
 	free (spli[0]);
 	spli[0] = ft_strtrim(temp, " ");
 	free (temp);
 	return (spli);
 }
-char	**single_quotes(char **argv, int arg)
+char	**single_quotes(char *arg)
 {
 	char	**spli;
 	char	*temp;
 
-	spli = ft_split(argv[arg], '"');
+	spli = ft_split(arg, '"');
 	temp = ft_strdup(spli[0]);
 	free (spli[0]);
 	spli[0] = ft_strtrim(temp, " ");
@@ -123,19 +130,19 @@ char	**single_quotes(char **argv, int arg)
 	return (spli);
 }
 
-char	**get_argv(char **argv, int arg, t_pipex *data)
+char	**get_argv(char *arg, t_pipex *data)
 {
 	char	**argv2;
 	char	**spli;
 
-	if (ft_strchr(argv[arg], '"') && ft_strchr(argv[arg], '\''))
-		return (nigthmare_quotes(argv, arg, data));
-	else if (ft_strchr(argv[arg], '\''))
-		return (double_quotes(argv, arg));
-	else if (ft_strchr(argv[arg], '"'))
-		return (single_quotes(argv, arg));
+	if (ft_strchr(arg, '"') && ft_strchr(arg, '\''))
+		return (nigthmare_quotes(arg, data));
+	else if (ft_strchr(arg, '\''))
+		return (double_quotes(arg));
+	else if (ft_strchr(arg, '"'))
+		return (single_quotes(arg));
 	else
-		return (spli = ft_split(argv[arg], ' '));
+		return (spli = ft_split(arg, ' '));
 	return (argv2);
 }
 
@@ -164,7 +171,7 @@ int	fd_manager(int cas, t_pipex *data)
 
 void	open_txt(char *source, char* dest, t_pipex *data)
 {
-	data->src_fd = open(source, O_RDONLY, 0644);
+	data->src_fd = open(source, O_RDONLY | O_CREAT, 0644);
 	data->dst_fd = open(dest, O_RDWR | O_TRUNC | O_CREAT, 0644);
 }
 
@@ -172,8 +179,10 @@ void	forke(t_pipex *data, int n, char **argv, char **envp)
 {
 	char	**arguments;
 	char	*path;
+	int		i;
 
-	arguments = get_argv(argv, n, data);
+	i = -1;
+	arguments = get_argv(argv[n], data);
 	path = get_path(ft_split(argv[n], ' '), envp, data, n);
 	data->pid = fork();
 	if (data->pid == 0)
@@ -185,7 +194,14 @@ void	forke(t_pipex *data, int n, char **argv, char **envp)
 	if (data->pid < 0)
 		exit(2);
 	if (data->pid > 0)
+	{
+		while (arguments[++i])
+			free(arguments[i]);
+		free(arguments);
+		if (path)
+			free(path);
 		waitpid(data->pid, NULL, WNOHANG);
+	}
 }
 
 int	main(int argc, char *argv[], char **envp)
@@ -194,9 +210,11 @@ int	main(int argc, char *argv[], char **envp)
 
 	if (argc < 5)
 	{
-		perror("pipex: not enough arguments");
+		ft_putstr_fd("pipex: not enough arguments", 2);
 		exit(2);
 	}
+	if (!*envp)
+		envp[0] = strdup("PATH=/bin:/usr/bin:");
 	data.error = 0;
 	pipe(data.pip);
 	open_txt(argv[1], argv[4], &data);
