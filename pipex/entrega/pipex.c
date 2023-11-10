@@ -6,7 +6,7 @@
 /*   By: xortega <xortega@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/22 11:44:25 by xortega           #+#    #+#             */
-/*   Updated: 2023/11/10 15:48:35 by xortega          ###   ########.fr       */
+/*   Updated: 2023/11/10 15:34:52 by xortega          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,8 +34,6 @@ void	fd_manager(int cas, t_pipex *data)
 
 void	open_txt(char *source, char *dest, t_pipex *data)
 {
-	if (access(source, F_OK))
-		ft_putstr_fd("jiji", 2);
 	data->src_fd = open(source, O_RDONLY | O_CREAT, 0644);
 	data->dst_fd = open(dest, O_RDWR | O_TRUNC | O_CREAT, 0644);
 }
